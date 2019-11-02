@@ -48,7 +48,7 @@ class UserController extends AbstractController
     }
     
     /**
-     * @Route("/login", name="login")
+     * @Route("/login", name="login", methods={"POST"})
      */
     public function login(AuthenticationUtils $authenticationUtils): JsonResponse
     {
@@ -60,6 +60,11 @@ class UserController extends AbstractController
             'error' => $error->getMessage()
         ]);
     }
+    
+    /**
+     * @Route("/logout", name="logout", methods={"GET"})
+     */
+    public function logout(){}
 
     /**
      * @Route("/unique-email", methods={"POST"})
@@ -80,12 +85,22 @@ class UserController extends AbstractController
         } catch (InvalidModelException $e) {
             return new JsonResponse($e->getErrors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['email' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
 
         return new JsonResponse([
-            'message' => 'Email available for registration'
+            'email' => 'Email available for registration'
         ]);
+    }
+    
+    /**
+     * @Route("/user", methods={"GET"})
+     * 
+     * @return JsonResponse
+     */
+    public function user(SerializerInterface $serializer)
+    {
+        return new JsonResponse($serializer->serialize($this->getUser(), 'json', ['groups' => ['public']]), Response::HTTP_OK, [], true);
     }
 
 }

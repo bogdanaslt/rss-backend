@@ -4,7 +4,6 @@ namespace App\Security;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -19,87 +18,94 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Symfony\Component\Serializer\SerializerInterface;
+use App\Entity\Credentials;
+use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\HttpFoundation\Response;
 
-class LoginAuthenticator extends AbstractGuardAuthenticator
-{
+class LoginAuthenticator extends AbstractGuardAuthenticator {
+
     use TargetPathTrait;
 
     private $entityManager;
     private $router;
     private $passwordEncoder;
-
     private $serializer;
     
-    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder,  \Symfony\Component\Serializer\SerializerInterface $serializer)
-    {
+    private $userRepository;
+
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        RouterInterface $router, 
+        UserPasswordEncoderInterface $passwordEncoder, 
+        SerializerInterface $serializer,
+        UserRepository $userRepository
+    ) {
         $this->entityManager = $entityManager;
         $this->router = $router;
         $this->passwordEncoder = $passwordEncoder;
         $this->serializer = $serializer;
+        $this->userRepository = $userRepository;
     }
 
-    public function supports(Request $request)
+    public function supports(Request $request) 
     {
-        return 'login' === $request->attributes->get('_route')
-            && $request->isMethod('POST');
+        return 'login' === $request->attributes->get('_route') && $request->isMethod('POST');
     }
 
-    public function getCredentials(Request $request)
+    public function getCredentials(Request $request) 
     {
-        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        $credentials = $this->serializer->deserialize($request->getContent(), Credentials::class, 'json');
 
         $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $user->getEmail()
+                Security::LAST_USERNAME,
+                $credentials->getEmail()
         );
 
-        return $user;
+        return $credentials;
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider) 
     {
-        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $credentials->getEmail()]);
+        $user = $this->userRepository->findOneBy(['email' => $credentials->getEmail()]);
         if (!$user) {
             // fail authentication with a custom error
-            throw new CustomUserMessageAuthenticationException('Email could not be found.');
+            throw new CustomUserMessageAuthenticationException('Bad credentials or user does not exists');
         }
 
         return $user;
     }
 
-    public function checkCredentials($credentials, UserInterface $user)
+    public function checkCredentials($credentials, UserInterface $user) 
     {
         return $this->passwordEncoder->isPasswordValid($user, $credentials->getPassword());
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey) 
     {
-        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
-        if ($targetPath) {
-            return new \Symfony\Component\HttpFoundation\JsonResponse($targetPath);
-        }
-
-        // For example : return new RedirectResponse($this->router->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        return new JsonResponse([
+            'message' => 'Login successful'
+        ]);
     }
 
-    protected function getLoginUrl(){}
+    protected function getLoginUrl() {}
 
-    public function onAuthenticationFailure(Request $request, \Symfony\Component\Security\Core\Exception\AuthenticationException $exception)
-    {
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception) {
         if ($request->hasSession()) {
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
         }
 
-        return new \Symfony\Component\HttpFoundation\JsonResponse([$exception->getMessage()]);
+        return new JsonResponse(['message' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
     }
 
-    public function start(Request $request, \Symfony\Component\Security\Core\Exception\AuthenticationException $authException = null): \Symfony\Component\HttpFoundation\Response
+    public function start(Request $request, \Symfony\Component\Security\Core\Exception\AuthenticationException $authException = null): Response 
     {
-        return new \Symfony\Component\HttpFoundation\JsonResponse([], \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse([], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function supportsRememberMe(): bool
+    public function supportsRememberMe(): bool 
     {
         return false;
     }
