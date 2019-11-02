@@ -6,6 +6,7 @@ use App\Entity\User;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Exception\InvalidModelException;
 
 class UserService
 {
@@ -70,14 +71,11 @@ class UserService
     public function validate(User $user, $groups = null)
     {
         $violations = $this->validator->validate($user, null, $groups);
-        $errors = [];
         if ($violations->count() > 0) {
-            foreach ($violations as $violation) {
-                $errors[$violation->getPropertyPath()] = $violation->getMessage();
-            }
+            throw (new InvalidModelException())->setViolations($violations);
         }
 
-        return $errors;
+        return $user;
     }
 
 }
