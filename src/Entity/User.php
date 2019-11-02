@@ -22,15 +22,15 @@ class User implements UserInterface
     private $id;
 
     /**
-     * @Assert\NotBlank
-     * @Assert\Email
+     * @Assert\NotBlank(groups={"Default, login"})
+     * @Assert\Email(groups={"Default, login"})
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
 
     /**
      * @var string The hashed password
-     * @Assert\NotBlank
+     * @Assert\NotBlank(groups={"Default, login"})
      * @ORM\Column(type="string")
      */
     private $password;

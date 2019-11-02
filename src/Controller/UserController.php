@@ -10,6 +10,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use App\Entity\User;
 use App\Service\UserService;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class UserController extends AbstractController
 {
@@ -40,6 +41,20 @@ class UserController extends AbstractController
                 "User %s successfully created. You may login.",
                 $registered->getEmail()
             )
+        ]);
+    }
+    
+    /**
+     * @Route("/login", name="login")
+     */
+    public function login(AuthenticationUtils $authenticationUtils): JsonResponse
+    {
+        $error = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername = $authenticationUtils->getLastUsername();
+
+        return new JsonResponse([
+            'last_username' => $lastUsername,
+            'error' => $error->getMessage()
         ]);
     }
 
