@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Service\UserService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use App\Exception\InvalidModelException;
 
 class UserController extends AbstractController
 {
@@ -27,14 +28,16 @@ class UserController extends AbstractController
     ) {
         $data = $request->getContent();
 
-        $user = $serializer->deserialize($data, User::class, 'json');
+        $deserialized = $serializer->deserialize($data, User::class, 'json');
 
-        $errors = $userService->validate($user);
-        if (count($errors) > 0) {
-            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+        try {
+            $user = $userService->validate($deserialized);
+            $registered = $userService->register($user);            
+        } catch (InvalidModelException $e) {
+            return new JsonResponse($e->getErrors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
-
-        $registered = $userService->register($user);
 
         return new JsonResponse([
             'message' => sprintf(
@@ -70,11 +73,14 @@ class UserController extends AbstractController
     ) {
         $data = $request->getContent();
 
-        $user = $serializer->deserialize($data, User::class, 'json');
+        $deserialized = $serializer->deserialize($data, User::class, 'json');
 
-        $errors = $userService->validate($user, 'email');
-        if (count($errors) > 0) {
-            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+        try {
+            $userService->validate($deserialized, 'email');     
+        } catch (InvalidModelException $e) {
+            return new JsonResponse($e->getErrors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
 
         return new JsonResponse([
