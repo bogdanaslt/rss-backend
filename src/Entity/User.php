@@ -22,8 +22,9 @@ class User implements UserInterface
     private $id;
 
     /**
-     * @Assert\NotBlank
-     * @Assert\Email
+     * @Assert\NotBlank(groups={"Default", "email"})
+     * @Assert\Email(groups={"Default", "email"})
+     * @Assert\Length(max=180, groups={"Default", "email"})
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
