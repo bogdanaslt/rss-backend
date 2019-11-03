@@ -11,22 +11,13 @@ use App\Exception\InvalidModelException;
 class UserService
 {
 
-    /**
-     *
-     * @var PasswordEncoderInterface
-     */
+    /** @var PasswordEncoderInterface */
     private $passwordEncoder;
 
-    /**
-     * 
-     * @var ValidatorInterface
-     */
+    /** @var ValidatorInterface */
     private $validator;
 
-    /**
-     *
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
@@ -39,8 +30,7 @@ class UserService
             UserPasswordEncoderInterface $passwordEncoder,
             ValidatorInterface $validator,
             EntityManagerInterface $entityManager
-    )
-    {
+    ) {
         $this->passwordEncoder = $passwordEncoder;
         $this->validator = $validator;
         $this->entityManager = $entityManager;
