@@ -43,6 +43,7 @@ class UserService
      */
     public function register(User $user)
     {
+        $this->validate($user);
         $password = $this->passwordEncoder->encodePassword($user, $user->getPassword());
         $user->setPassword($password);
 

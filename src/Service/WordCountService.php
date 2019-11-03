@@ -21,7 +21,7 @@ class WordCountService
     
     public function filterCommon(array $words): array
     {
-        return array_diff($words, $this->parameters->get('common_words'));
+        return array_values(array_diff($words, $this->parameters->get('common_words')));
     }
     
     public function sort(array $words): array
