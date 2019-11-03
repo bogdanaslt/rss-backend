@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
-use App\Model\Feed;
 use App\Model\Entry;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,24 +18,36 @@ class FeedController extends AbstractController
      * @Route("/feed")
      *  
      * @param SerializerInterface $serializer
-     * @param WordCountService $wordCount
+     * @param WordCountService $wordCountService
      * @param AtomFeedService $atomFeedService
      * @return JsonResponse
      */
-    public function feed(SerializerInterface $serializer, WordCountService $wordCount, AtomFeedService $atomFeedService)
-    {
+    public function feed(
+        SerializerInterface $serializer,
+        WordCountService $wordCountService,
+        AtomFeedService $atomFeedService
+    ) {
         $xml = $atomFeedService->get();
         $deserialized = $serializer->deserialize($xml, Entry::class.'[]', 'xml');
         
         $words = [];
+        /** @var Entry $entry */
         foreach ($deserialized as $entry) {
-            $words = array_merge($words, $wordCount->filterCommon($entry->getWords()));
+            $words = array_merge(
+                    $words,
+                    $wordCountService->filterCommon(
+                        $wordCountService->toWords($entry->getTitle())
+                    ),
+                    $wordCountService->filterCommon(
+                        $wordCountService->toWords($entry->getSummary())
+                    )
+            );
         }
         
-        $sorted = $wordCount->sort($wordCount->count($words));
+        $sorted = $wordCountService->sort($wordCountService->count($words));
        
         $json = $serializer->serialize([
-            'top_words' => $wordCount->topTen($sorted),
+            'top_words' => $wordCountService->topTen($sorted),
             'entries' => $deserialized
         ], 'json', [
             'groups' => ['default']

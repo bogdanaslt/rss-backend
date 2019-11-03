@@ -21,4 +21,5 @@ security:
                 success_handler: App\Security\LogoutHandler
 
     access_control:
+        - { path: ^/feed, roles: ROLE_USER }
         - { path: ^/user, roles: ROLE_USER }

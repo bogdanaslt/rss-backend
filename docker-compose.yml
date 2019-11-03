@@ -28,9 +28,6 @@ services:
     networks:
       - mintos
 
-volumes:
-  db_data:
-
 networks:
   mintos:
     driver: bridge

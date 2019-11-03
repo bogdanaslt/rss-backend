@@ -6,100 +6,145 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class Entry
 {
+
     /**
      *
+     * @var string
      * @Groups({"default"})
      */
     protected $updated;
-    
+
     /**
      *
+     * @var string
      * @Groups({"default"})
      */
     protected $author;
 
     /**
      *
+     * @var string
      * @Groups({"default"})
      */
     protected $link;
-    
+
     /**
      *
+     * @var string
      * @Groups({"default"})
      */
     protected $title;
-    
+
     /**
      *
+     * @var string
      * @Groups({"default"})
      */
     protected $summary;
-    
-    public function getUpdated()
+
+    /**
+     * 
+     * @return DateTime|null
+     */
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
-    
-    public function setUpdated($updated)
+
+    /**
+     * 
+     * @param DateTime|null $updated
+     * @return \self
+     */
+    public function setUpdated(?\DateTime $updated): self
     {
         $this->updated = $updated;
-        
-        return $this;
-    }
-    
-    public function getAuthor()
-    {
-        return $this->author;
-    }
-    
-    public function setAuthor($author)
-    {
-        $this->author = $author;
-        
+
         return $this;
     }
 
-    public function getLink()
+    /**
+     * 
+     * @return string|null
+     */
+    public function getAuthor(): ?string
+    {
+        return $this->author;
+    }
+
+    /**
+     * 
+     * @param string|null $author
+     * @return \self
+     */
+    public function setAuthor(?string $author): self
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
+    /**
+     * 
+     * @return string|null
+     */
+    public function getLink(): ?string
     {
         return $this->link;
     }
 
-    public function setLink($link)
+    /**
+     * 
+     * @param string|null $link
+     * @return \self
+     */
+    public function setLink(?string $link): self
     {
         $this->link = $link;
-        
+
         return $this;
     }
 
-    public function getTitle()
+    /**
+     * 
+     * @return string|null
+     */
+    public function getTitle(): ?string
     {
         return $this->title;
     }
-    
-    public function setTitle($title)
+
+    /**
+     * 
+     * @param string|null $title
+     * @return \self
+     */
+    public function setTitle(?string $title): self
     {
         $this->title = $title;
-        
+
         return $this;
     }
 
-    public function getSummary()
+    /**
+     * 
+     * @return string|null
+     */
+    public function getSummary(): ?string
     {
         return $this->summary;
     }
-    
-    public function setSummary($summary)
+
+    /**
+     * 
+     * @param string|null $summary
+     * @return \self
+     */
+    public function setSummary(?string $summary): self
     {
         $this->summary = $summary;
-        
+
         return $this;
     }
-    
-    public function getWords()
-    {
-        $clean = strip_tags($this->summary);
-        
-        return str_word_count(strtolower($this->title . " " . $clean), 1);
-    }
+
 }
