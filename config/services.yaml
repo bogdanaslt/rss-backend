@@ -3,6 +3,7 @@ imports:
 
 parameters:
     feed_url: 'https://www.theregister.co.uk/software/headlines.atom'
+    frontend_urls: '%env(json:FRONTEND_URLS)%'
     
 services:
     # default configuration for services in *this* file

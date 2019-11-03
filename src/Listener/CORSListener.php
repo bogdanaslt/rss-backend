@@ -9,9 +9,18 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 final class CORSListener implements EventSubscriberInterface
 {
+    /** @var ParameterBagInterface */
+    private $parameters;
+    
+    public function __construct(ParameterBagInterface $parameters)
+    {
+        $this->parameters = $parameters;
+    }
+    
     public static function getSubscribedEvents(): array
     {
         return [
@@ -55,12 +64,14 @@ final class CORSListener implements EventSubscriberInterface
             return;
         }
 
-        $response = $event->getResponse();
-        if ($response) {
-            $response->headers->set('Access-Control-Allow-Origin', 'http://localhost:8080');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
-            $response->headers->set('Access-Control-Allow-Headers', 'content-type, x-xsrf-token');
+        if (in_array($event->getRequest()->headers->get('origin'), $this->parameters->get('frontend_urls'))) {        
+            $response = $event->getResponse();
+            if ($response) {
+                $response->headers->set('Access-Control-Allow-Origin', $event->getRequest()->headers->get('origin'));
+                $response->headers->set('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH');
+                $response->headers->set('Access-Control-Allow-Credentials', 'true');
+                $response->headers->set('Access-Control-Allow-Headers', 'content-type, x-xsrf-token');
+            }
         }
     }
 }
